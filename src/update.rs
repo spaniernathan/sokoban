@@ -19,16 +19,16 @@ pub fn update(mut context: Context) -> Context {
                   std::process::exit(0);
               }
               crossterm::event::KeyCode::Up => {
-                  context.map = context.player.move_up(context.map)
+                  context.map = context.player.move_up_char(context.map, context.map_offset)
               }
               crossterm::event::KeyCode::Down => {
-                  context.map = context.player.move_down(context.map)
+                  context.map = context.player.move_down_char(context.map, context.map_offset)
               }
               crossterm::event::KeyCode::Left => {
-                  context.map = context.player.move_left(context.map)
+                  context.map = context.player.move_left_char(context.map, context.map_offset)
               }
               crossterm::event::KeyCode::Right => {
-                  context.map = context.player.move_right(context.map)
+                  context.map = context.player.move_right_char(context.map, context.map_offset)
               }
               _ => noop(),
           },

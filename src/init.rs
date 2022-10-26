@@ -1,4 +1,11 @@
-use sokoban::{Context, Player, clear_terminal, hide_terminal_cursor, get_terminal_size};
+use sokoban::{
+  Context,
+  Player,
+  Scene,
+  clear_terminal,
+  hide_terminal_cursor,
+  get_terminal_size,
+};
 use core::panic;
 use crossterm::{
     terminal::enable_raw_mode,
@@ -14,9 +21,9 @@ fn check_map(map: &Vec<char>, offset: usize) -> bool {
     let mut goals = 0;
     let mut players = 0;
     // Not sure the loop is right
-    for row in 0..map.len() {
-      for col in 0..offset {
-        let index = row * offset + col;
+    for y in 0..offset {
+      for x in 0..map.len() / offset {
+        let index = y * offset + x;
         if map[index] == 'B' {
           boxes += 1;
         } else if map[index] == 'X' {
@@ -26,10 +33,10 @@ fn check_map(map: &Vec<char>, offset: usize) -> bool {
         }
       }
     }
-    players != 1 && boxes < 1 && goals < 1 && boxes != goals
+    players == 1 && boxes > 1 && goals > 1 && boxes == goals
 }
 
-fn load_maps() -> Vec<char> {
+fn load_maps() -> (Vec<char>, usize) {
     let map_string = match std::fs::read_to_string(
         "/Users/spaniernathan/Work/Perso/sokoban/src/maps/level1.map",
     ) {
@@ -45,7 +52,7 @@ fn load_maps() -> Vec<char> {
     if !check_map(&map, offset) {
         panic!("Invalid map file");
     }
-    map
+    (map, offset)
 }
 
 pub fn init() -> Context {
@@ -63,36 +70,29 @@ pub fn init() -> Context {
   let size = get_terminal_size(&terminal);
   terminal = clear_terminal(terminal);
 
-  let map_string = match std::fs::read_to_string(
-      "/Users/spaniernathan/Work/Perso/sokoban/src/maps/level1.map",
-  ) {
-      Ok(s) => s,
-      Err(e) => panic!("Failed to read map file: {}", e),
-  };
-  let mut map_vec: Vec<Vec<char>> = Vec::new();
-  for line in map_string.lines() {
-      let mut line_vec: Vec<char> = Vec::new();
-      for c in line.chars() {
-          line_vec.push(c);
-      }
-      map_vec.push(line_vec);
-  }
+  let (map, map_offset) = load_maps();
 
-  let player_x = map_vec.iter().position(|x| x.contains(&'P')).unwrap() as u16;
-  let player_y = map_vec[player_x as usize]
-      .iter()
-      .position(|&x| x == 'P')
-      .unwrap() as u16;
+  let mut player_x = 0;
+  let mut player_y = 0;
+
+  for y in 0..map_offset {
+    for x in 0..(map.len() / map_offset) {
+      if map[y * map_offset + x] == 'P' {
+        player_x = x;
+        player_y = y;
+      }
+    }
+  }
 
   let context = Context {
       terminal,
       terminal_size: size,
       events: Vec::new(),
       error: None,
-      map: map_vec,
-      map_offset: 0,
-      char_map: Vec::new(),
+      map_offset,
+      map,
       player: Player::new(player_y, player_x),
+      current_scene: Scene::Game,
   };
   context
 }
