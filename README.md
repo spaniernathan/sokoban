@@ -34,7 +34,6 @@ $ cargo run --release -- --tick-rate 200
 
 ## TODOs / Fixes
 
-- [ ] Use an int array + offset instead of a `Vec<Vec<char>>` to represent the level
 - [ ] Handle when box is on receptacle
 - [ ] Map selection
 - [ ] Victory screen
