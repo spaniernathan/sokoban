@@ -91,7 +91,7 @@ pub fn init() -> Context {
       error: None,
       map_offset,
       map,
-      player: Player::new(player_y, player_x),
+      player: Player::new(player_x, player_y),
       current_scene: Scene::Game,
   };
   context
