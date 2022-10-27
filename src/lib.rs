@@ -6,7 +6,7 @@ pub enum Error {
     TerminalSizeError,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Scene {
     MapSelection,
     Game,
@@ -22,6 +22,7 @@ pub struct Context {
     pub map_offset: usize,
     pub player: Player,
     pub current_scene: Scene,
+    pub victory : bool,
 }
 
 #[derive(Debug)]
@@ -42,15 +43,16 @@ impl Player {
         }
     }
 
-    fn can_move(&mut self, next_tile: char, next_next_tile: char) -> (bool, bool) {
+    fn can_move(&mut self, next_tile: char, next_next_tile: char) -> (bool, bool, bool) {
         let mut player_moved = false;
         let mut box_moved = false;
+        let mut box_on_goal = false;
         if self.is_on_receptacle {
             self.was_on_receptacle = true;
             self.is_on_receptacle = false;
         }
         if next_tile == '#' {
-            return (player_moved, box_moved);
+            return (player_moved, box_moved, box_on_goal);
         }
         if next_tile == ' ' {
             player_moved = true;
@@ -58,11 +60,16 @@ impl Player {
             player_moved = true;
             self.is_on_receptacle = true;
         } else if next_tile == 'B' && (next_next_tile == 'X' || next_next_tile == ' ') {
+          if next_next_tile == ' ' {
             player_moved = true;
             box_moved = true;
+          } else if next_next_tile == 'X' {
+            player_moved = true;
+            box_moved = true;
+            box_on_goal = true
+          }
         }
-        // TODO: handle when box is on receptacle
-        (player_moved, box_moved)
+        (player_moved, box_moved, box_on_goal)
     }
 
     pub fn move_up_char(&mut self, mut map: Vec<char>, offset: usize) -> Vec<char> {
@@ -75,7 +82,7 @@ impl Player {
             None => '#',
         };
         if self.y > 0 {
-            let (player_moved, box_moved) = self.can_move(next_tile, next_next_tile);
+            let (player_moved, box_moved, box_on_goal) = self.can_move(next_tile, next_next_tile);
             if player_moved {
                 map[(self.y - 1) * offset + self.x] = 'P';
                 if self.was_on_receptacle {
@@ -86,6 +93,9 @@ impl Player {
                 }
                 if box_moved {
                     map[(self.y - 2) * offset + self.x] = 'B';
+                    if box_on_goal {
+                      map[(self.y - 2) * offset + self.x] = 'O';
+                    }
                 }
                 self.y -= 1;
             }
@@ -103,7 +113,7 @@ impl Player {
             None => '#',
         };
         if self.y < map.len() - 1 {
-            let (player_moved, box_moved) = self.can_move(next_tile, next_next_tile);
+            let (player_moved, box_moved, box_on_goal) = self.can_move(next_tile, next_next_tile);
             if player_moved {
                 map[(self.y + 1) * offset + self.x] = 'P';
                 if self.was_on_receptacle {
@@ -114,6 +124,9 @@ impl Player {
                 }
                 if box_moved {
                     map[(self.y + 2) * offset + self.x] = 'B';
+                    if box_on_goal {
+                      map[(self.y + 2) * offset + self.x] = 'O';
+                    }
                 }
                 self.y += 1;
             }
@@ -131,7 +144,7 @@ impl Player {
             None => '#',
         };
         if self.x > 0 {
-            let (player_moved, box_moved) = self.can_move(next_tile, next_next_tile);
+            let (player_moved, box_moved, box_on_goal) = self.can_move(next_tile, next_next_tile);
             if player_moved {
                 map[self.y * offset + self.x - 1] = 'P';
                 if self.was_on_receptacle {
@@ -142,6 +155,9 @@ impl Player {
                 }
                 if box_moved {
                     map[self.y * offset + self.x - 2] = 'B';
+                    if box_on_goal {
+                      map[self.y * offset + self.x - 2] = 'O';
+                    }
                 }
                 self.x -= 1;
             }
@@ -159,7 +175,7 @@ impl Player {
             None => '#',
         };
         if self.x < offset - 1 {
-            let (player_moved, box_moved) = self.can_move(next_tile, next_next_tile);
+            let (player_moved, box_moved, box_on_goal) = self.can_move(next_tile, next_next_tile);
             if player_moved {
                 map[self.y * offset + self.x + 1] = 'P';
                 if self.was_on_receptacle {
@@ -170,6 +186,9 @@ impl Player {
                 }
                 if box_moved {
                     map[self.y * offset + self.x + 2] = 'B';
+                    if box_on_goal {
+                      map[self.y * offset + self.x + 2] = 'O';
+                    }
                 }
                 self.x += 1;
             }

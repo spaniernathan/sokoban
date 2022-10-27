@@ -34,8 +34,8 @@ $ cargo run --release -- --tick-rate 200
 
 ## TODOs / Fixes
 
-- [ ] Handle when box is on receptacle
 - [ ] Map selection
-- [ ] Victory screen
+- [ ] Better victory screen
 - [ ] Check: The level must be rectangular
 - [ ] Check: The level must be sourrounded by walls
+- [ ] Too much cast between usize and and u16, maybe use one of them everywhere

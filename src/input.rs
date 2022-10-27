@@ -9,7 +9,7 @@ use tui::{
 };
 
 pub fn input(mut context: Context) -> Context {
-  if poll(Duration::from_millis(500)).expect("Failed to poll") {
+  if poll(Duration::from_millis(200)).expect("Failed to poll") {
       match read() {
           Ok(Event::FocusGained) => noop(),
           Ok(Event::FocusLost) => noop(),

@@ -93,6 +93,7 @@ pub fn init() -> Context {
       map,
       player: Player::new(player_x, player_y),
       current_scene: Scene::Game,
+      victory: false,
   };
   context
 }
